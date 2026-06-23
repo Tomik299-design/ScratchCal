@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScratchCal — škrtací kalendář</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="board">
+
+  <header class="board-head">
+    <div class="head-left">
+      <h1 class="title">ScratchCal</h1>
+      <p class="subtitle">škrtni si svůj den</p>
+    </div>
+    <div class="head-right">
+      <p class="stat-line"><span id="statCrossed">0</span> z <span id="statTotal">30</span> dní škrtnuto</p>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </header>
+
+  <div class="sheet">
+
+    <div class="sheet-nav">
+      <button class="nav-btn" id="prevMonth" aria-label="Předchozí měsíc">
+        <i class="ti ti-chevron-left" aria-hidden="true"></i>
+      </button>
+      <div class="month-label">
+        <span id="monthName">červen</span> <span id="yearName">2026</span>
+      </div>
+      <button class="nav-btn" id="nextMonth" aria-label="Další měsíc">
+        <i class="ti ti-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="weekday-row">
+      <span>po</span><span>út</span><span>st</span><span>čt</span><span>pá</span><span class="weekend">so</span><span class="weekend">ne</span>
+    </div>
+
+    <div class="grid" id="calendarGrid"></div>
+
+    <p class="hint">klikni na den a škrtni ho · podrž pro poznámku</p>
+
+  </div>
+
+  <footer class="board-foot">
+    <p id="todayLine"></p>
+  </footer>
+
+</div>
+
+<div class="note-overlay" id="noteOverlay">
+  <div class="note-card">
+    <p class="note-date" id="noteDate"></p>
+    <textarea class="note-input" id="noteInput" placeholder="Co se ten den děje…" maxlength="200"></textarea>
+    <div class="note-actions">
+      <button class="note-btn note-cancel" id="noteCancel">Zrušit</button>
+      <button class="note-btn note-save" id="noteSave">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.1.0/iconfont/tabler-icons.min.css">
+<script src="app.js"></script>
+</body>
+</html>

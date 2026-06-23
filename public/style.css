@@ -1,0 +1,351 @@
+:root {
+  --paper: #f3ecdb;
+  --paper-light: #faf6ea;
+  --paper-shadow: #e4d9bd;
+  --ink: #3c2f1e;
+  --ink-soft: #6b5a3e;
+  --ink-faint: #a89570;
+  --accent: #a8442f;
+  --accent-soft: #c97b5f;
+  --line: #c9b98e;
+  --weekend: #8a5a3a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #d8cca4;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(0,0,0,0.05), transparent 45%);
+  font-family: 'Source Serif 4', Georgia, serif;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.board {
+  width: 100%;
+  max-width: 560px;
+}
+
+.board-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding: 0 6px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.title {
+  font-family: 'Caveat', cursive;
+  font-size: 46px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1;
+  transform: rotate(-1.5deg);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 2px 0 0 4px;
+  font-style: italic;
+}
+
+.head-right {
+  text-align: right;
+  min-width: 160px;
+}
+
+.stat-line {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 6px;
+}
+
+.stat-line span {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.progress-track {
+  width: 160px;
+  height: 6px;
+  background: var(--paper-shadow);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-left: auto;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent-soft);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.sheet {
+  background: var(--paper);
+  background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.25), transparent 60%);
+  border-radius: 3px;
+  padding: 24px 22px 18px;
+  box-shadow:
+    0 1px 0 var(--paper-light) inset,
+    0 14px 0 -8px rgba(0,0,0,0.08),
+    0 16px 18px -6px rgba(60,47,30,0.35);
+  position: relative;
+  clip-path: polygon(
+    0% 1%, 3% 0%, 9% 0.6%, 16% 0%, 24% 0.8%, 31% 0%, 39% 0.5%, 47% 0%,
+    55% 0.7%, 63% 0%, 71% 0.6%, 79% 0%, 87% 0.8%, 94% 0%, 100% 0.6%,
+    100% 99%, 96% 100%, 89% 99.2%, 82% 100%, 74% 99.3%, 66% 100%,
+    58% 99.4%, 50% 100%, 42% 99.3%, 34% 100%, 26% 99.2%, 18% 100%,
+    11% 99.4%, 4% 100%, 0% 99%
+  );
+}
+
+.sheet-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.nav-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  background: var(--paper-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.nav-btn:hover { background: #fff; }
+.nav-btn:active { transform: scale(0.92); }
+
+.month-label {
+  font-family: 'Caveat', cursive;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: capitalize;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 8px;
+}
+
+.weekday-row span {
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.weekday-row span.weekend {
+  color: var(--weekend);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 3px;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.day:hover {
+  background: rgba(168,68,47,0.07);
+}
+
+.day.empty {
+  cursor: default;
+}
+.day.empty:hover {
+  background: none;
+}
+
+.day.weekend-day {
+  color: var(--weekend);
+}
+
+.day.is-today {
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+.day .scratch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.day .scratch svg {
+  width: 100%;
+  height: 100%;
+}
+
+.day .scratch path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  transition: stroke-dashoffset 0.25s ease-out;
+}
+
+.day.is-crossed .scratch path {
+  stroke-dashoffset: 0;
+}
+
+.day.is-crossed {
+  color: var(--ink-faint);
+}
+
+.note-dot {
+  position: absolute;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+}
+
+.hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin: 16px 0 2px;
+}
+
+.board-foot {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.board-foot p {
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin: 0;
+}
+
+/* poznamkovy overlay */
+.note-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(60,47,30,0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.note-overlay.open {
+  display: flex;
+}
+
+.note-card {
+  background: var(--paper-light);
+  border-radius: 4px;
+  padding: 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.note-date {
+  font-family: 'Caveat', cursive;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 10px;
+  text-transform: capitalize;
+}
+
+.note-input {
+  width: 100%;
+  min-height: 80px;
+  resize: none;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 14px;
+  color: var(--ink);
+  padding: 10px;
+}
+
+.note-input:focus {
+  outline: none;
+  border-color: var(--accent-soft);
+}
+
+.note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.note-btn {
+  border: none;
+  border-radius: 3px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: 'Source Serif 4', Georgia, serif;
+  cursor: pointer;
+}
+
+.note-cancel {
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+.note-save {
+  background: var(--accent);
+  color: #fff;
+}
+
+.note-save:hover { background: #8e3525; }
+
+@media (max-width: 420px) {
+  .title { font-size: 38px; }
+  .day { font-size: 14px; }
+  .month-label { font-size: 24px; }
+}
