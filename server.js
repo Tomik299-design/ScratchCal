@@ -24,10 +24,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/days/:month', async (req, res) => {
   try {
     const { month } = req.params; // napr. 2026-06
+
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ error: 'Spatny format mesice, ocekavano YYYY-MM' });
+    }
+
+    const [yearStr, monthStr] = month.split('-');
+    const year = parseInt(yearStr, 10);
+    const monthNum = parseInt(monthStr, 10);
+
+    const startDate = `${month}-01`;
+    const nextMonth = monthNum === 12 ? 1 : monthNum + 1;
+    const nextYear = monthNum === 12 ? year + 1 : year;
+    const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+
     const { data, error } = await supabase
       .from('calendar_days')
       .select('*')
-      .like('date', `${month}%`);
+      .gte('date', startDate)
+      .lt('date', endDate);
 
     if (error) throw error;
 
