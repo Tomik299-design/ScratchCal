@@ -1,14 +1,23 @@
 # ScratchCal — škrtací kalendář
 
 Měsíční škrtací kalendář v papírovém útržkovém stylu. Klikneš na den a škrtneš ho,
-podržením otevřeš poznámku/úkol k danému dni. Vše se ukládá natrvalo do Supabase.
+podržením otevřeš poznámku/úkol k danému dni. Vedle kalendáře je panel s odpočty
+(„za kolik dní Vánoce" apod.), kam si můžeš přidat libovolný počet cílů. Vše se
+ukládá natrvalo do Supabase.
 
 ## 1. Nastavení Supabase
 
-1. Otevři https://supabase.com a buď použij existující projekt, nebo si vytvoř nový.
+**Pokud zakládáš Supabase poprvé:**
+1. Otevři https://supabase.com a vytvoř si nový projekt.
 2. V levém menu klikni na **SQL Editor** → **New query**.
 3. Vlož celý obsah souboru `supabase_setup.sql` a klikni **Run**.
-   Tím se vytvoří tabulka `calendar_days`.
+   Tím se vytvoří tabulky `calendar_days` a `countdown_goals`.
+
+**Pokud už máš ScratchCal s tabulkou `calendar_days` z dřívějška:**
+1. V **SQL Editor** → **New query** vlož obsah souboru `migration_countdown_goals.sql` a klikni **Run**.
+   Tím jen doplníš novou tabulku `countdown_goals` pro odpočty.
+
+**V obou případech pak:**
 4. V levém menu klikni na **Project Settings** → **API**.
    - Zkopíruj **Project URL** → to je `SUPABASE_URL`
    - Zkopíruj **service_role key** (ne anon key!) → to je `SUPABASE_SERVICE_KEY`
@@ -53,14 +62,15 @@ Otevři v prohlížeči `http://localhost:3000`.
 
 ```
 scratchcal/
-├── server.js              # Express server + API endpoints
+├── server.js                      # Express server + API endpoints
 ├── package.json
-├── supabase_setup.sql      # SQL pro vytvoření tabulky
-├── .env.example            # šablona proměnných prostředí
+├── supabase_setup.sql              # SQL pro vytvoření obou tabulek (prvni nastaveni)
+├── migration_countdown_goals.sql   # SQL jen pro doplneni tabulky cilu (pokud uz mas DB)
+├── .env.example                    # šablona proměnných prostředí
 └── public/
     ├── index.html
-    ├── style.css           # papírový škrtací styl
-    └── app.js              # logika kalendáře + komunikace s API
+    ├── style.css                   # papírový škrtací styl
+    └── app.js                      # logika kalendáře + cílů + komunikace s API
 ```
 
 ## API endpoints
@@ -68,6 +78,9 @@ scratchcal/
 - `GET /api/days/:month` — vrátí všechny dny pro daný měsíc (formát `2026-06`)
 - `POST /api/days/:date` — uloží/aktualizuje den (formát `2026-06-23`), body: `{ crossed: true, note: "text" }`
 - `DELETE /api/days/:date` — smaže záznam dne
+- `GET /api/goals` — vrátí všechny odpočty/cíle
+- `POST /api/goals` — vytvoří nový odpočet, body: `{ label: "Vánoce", target_date: "2026-12-24" }`
+- `DELETE /api/goals/:id` — smaže odpočet
 - `GET /api/health` — kontrola, že server běží
 
 ## Poznámka k bezpečnosti

@@ -84,6 +84,64 @@ app.delete('/api/days/:date', async (req, res) => {
   }
 });
 
+// Ziskat vsechny cile/odpocty
+app.get('/api/goals', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('countdown_goals')
+      .select('*')
+      .order('target_date', { ascending: true });
+
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('GET /api/goals error:', err.message);
+    res.status(500).json({ error: 'Nepodarilo se nacist cile' });
+  }
+});
+
+// Vytvorit novy cil/odpocet
+app.post('/api/goals', async (req, res) => {
+  try {
+    const { label, target_date } = req.body;
+
+    if (!label || !target_date) {
+      return res.status(400).json({ error: 'Chybi label nebo target_date' });
+    }
+
+    const { data, error } = await supabase
+      .from('countdown_goals')
+      .insert({ label, target_date })
+      .select();
+
+    if (error) throw error;
+
+    res.json(data[0]);
+  } catch (err) {
+    console.error('POST /api/goals error:', err.message);
+    res.status(500).json({ error: 'Nepodarilo se ulozit cil' });
+  }
+});
+
+// Smazat cil/odpocet
+app.delete('/api/goals/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('countdown_goals')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /api/goals error:', err.message);
+    res.status(500).json({ error: 'Nepodarilo se smazat cil' });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
