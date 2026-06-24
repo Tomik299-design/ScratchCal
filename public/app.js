@@ -25,6 +25,16 @@ const noteSave = document.getElementById('noteSave');
 let activeNoteDate = null;
 let pressTimer = null;
 
+const goalsList = document.getElementById('goalsList');
+const goalAddBtn = document.getElementById('goalAddBtn');
+const goalOverlay = document.getElementById('goalOverlay');
+const goalLabelInput = document.getElementById('goalLabelInput');
+const goalDateInput = document.getElementById('goalDateInput');
+const goalCancel = document.getElementById('goalCancel');
+const goalSave = document.getElementById('goalSave');
+
+let goalsData = [];
+
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
 function formatDateKey(y, m, d) {
@@ -231,4 +241,135 @@ document.getElementById('nextMonth').addEventListener('click', () => {
   loadMonth();
 });
 
+// ---- Odpocty / cile ----
+
+function daysUntil(targetDateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(targetDateStr + 'T00:00:00');
+  const diffMs = target - today;
+  return Math.round(diffMs / (1000 * 60 * 60 * 24));
+}
+
+async function loadGoals() {
+  try {
+    const res = await fetch('/api/goals');
+    goalsData = await res.json();
+  } catch (err) {
+    console.error('Nepodarilo se nacist cile:', err);
+    goalsData = [];
+  }
+  renderGoals();
+}
+
+function renderGoals() {
+  goalsList.innerHTML = '';
+
+  if (!goalsData.length) {
+    const empty = document.createElement('div');
+    empty.className = 'goal-empty';
+    empty.textContent = 'zatím žádný odpočet';
+    goalsList.appendChild(empty);
+    return;
+  }
+
+  goalsData.forEach(goal => {
+    const diff = daysUntil(goal.target_date);
+    const card = document.createElement('div');
+    card.className = 'goal-card';
+
+    let numberText, unitText, numberClass = '';
+    if (diff > 0) {
+      numberText = diff;
+      unitText = diff === 1 ? 'den zbývá' : (diff >= 2 && diff <= 4 ? 'dny zbývají' : 'dní zbývá');
+    } else if (diff === 0) {
+      numberText = 'dnes';
+      unitText = 'je to dnes!';
+    } else {
+      numberText = Math.abs(diff);
+      unitText = 'dní zpět';
+      numberClass = 'past';
+    }
+
+    card.innerHTML = `
+      <div class="goal-card-top">
+        <p class="goal-label">${escapeHtml(goal.label)}</p>
+        <button class="goal-delete" data-id="${goal.id}" aria-label="Smazat odpočet">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <p class="goal-number ${numberClass}">${numberText}</p>
+      <p class="goal-unit">${unitText}</p>
+    `;
+
+    goalsList.appendChild(card);
+  });
+
+  goalsList.querySelectorAll('.goal-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteGoal(btn.dataset.id));
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+async function deleteGoal(id) {
+  try {
+    await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+    goalsData = goalsData.filter(g => String(g.id) !== String(id));
+    renderGoals();
+  } catch (err) {
+    console.error('Nepodarilo se smazat cil:', err);
+  }
+}
+
+function openGoalEditor() {
+  goalLabelInput.value = '';
+  goalDateInput.value = '';
+  goalOverlay.classList.add('open');
+  setTimeout(() => goalLabelInput.focus(), 50);
+}
+
+function closeGoalEditor() {
+  goalOverlay.classList.remove('open');
+}
+
+goalAddBtn.addEventListener('click', openGoalEditor);
+goalCancel.addEventListener('click', closeGoalEditor);
+
+goalOverlay.addEventListener('click', (e) => {
+  if (e.target === goalOverlay) closeGoalEditor();
+});
+
+goalSave.addEventListener('click', async () => {
+  const label = goalLabelInput.value.trim();
+  const targetDate = goalDateInput.value;
+
+  if (!label || !targetDate) {
+    goalLabelInput.style.borderColor = !label ? '#a8442f' : '';
+    goalDateInput.style.borderColor = !targetDate ? '#a8442f' : '';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/goals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label, target_date: targetDate })
+    });
+    const newGoal = await res.json();
+    goalsData.push(newGoal);
+    goalsData.sort((a, b) => a.target_date.localeCompare(b.target_date));
+    renderGoals();
+  } catch (err) {
+    console.error('Nepodarilo se ulozit cil:', err);
+  }
+
+  closeGoalEditor();
+});
+
 loadMonth();
+loadGoals();

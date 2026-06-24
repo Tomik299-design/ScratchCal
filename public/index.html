@@ -24,6 +24,8 @@
     </div>
   </header>
 
+  <div class="main-layout">
+
   <div class="sheet">
 
     <div class="sheet-nav">
@@ -48,6 +50,15 @@
 
   </div>
 
+  <aside class="goals-panel" id="goalsPanel">
+    <div class="goals-list" id="goalsList"></div>
+    <button class="goal-add-btn" id="goalAddBtn">
+      <i class="ti ti-plus" aria-hidden="true"></i> přidat odpočet
+    </button>
+  </aside>
+
+  </div>
+
   <footer class="board-foot">
     <p id="todayLine"></p>
   </footer>
@@ -61,6 +72,20 @@
     <div class="note-actions">
       <button class="note-btn note-cancel" id="noteCancel">Zrušit</button>
       <button class="note-btn note-save" id="noteSave">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<div class="note-overlay" id="goalOverlay">
+  <div class="note-card">
+    <p class="note-date">Nový odpočet</p>
+    <label class="goal-label-text">Název</label>
+    <input class="note-input goal-text-input" id="goalLabelInput" type="text" placeholder="např. Vánoce" maxlength="40">
+    <label class="goal-label-text">Cílový den</label>
+    <input class="note-input goal-text-input" id="goalDateInput" type="date">
+    <div class="note-actions">
+      <button class="note-btn note-cancel" id="goalCancel">Zrušit</button>
+      <button class="note-btn note-save" id="goalSave">Uložit</button>
     </div>
   </div>
 </div>
