@@ -18,6 +18,31 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 app.use(cors());
 app.use(express.json());
+
+// Logovani navstevniku - IP + geolokace (jen kdyz nekdo otevre stranku, ne API volani)
+app.use(async (req, res, next) => {
+  if (req.path === '/' || req.path === '/index.html') {
+    const ip =
+      (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+      req.socket.remoteAddress ||
+      'neznama';
+
+    // ip-api.com je zdarma, nevyzaduje klic, limit 45 req/min
+    try {
+      const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=country,regionName,city,status`);
+      const geo = await geoRes.json();
+      if (geo.status === 'success') {
+        console.log(`[NAVSTEVA] IP: ${ip} | ${geo.city}, ${geo.regionName}, ${geo.country}`);
+      } else {
+        console.log(`[NAVSTEVA] IP: ${ip} | geolokace nedostupna`);
+      }
+    } catch {
+      console.log(`[NAVSTEVA] IP: ${ip} | geolokace selhala`);
+    }
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   etag: false,
   lastModified: false,
