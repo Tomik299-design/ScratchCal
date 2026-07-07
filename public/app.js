@@ -3,6 +3,18 @@ const monthNames = [
   'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'
 ];
 
+// ---- Anonymni UID uzivatele ----
+function getUid() {
+  let uid = localStorage.getItem('scratchcal_uid');
+  if (!uid) {
+    uid = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    localStorage.setItem('scratchcal_uid', uid);
+  }
+  return uid;
+}
+
+const UID = getUid();
+
 let currentDate = new Date();
 let currentYear = currentDate.getFullYear();
 let currentMonth = currentDate.getMonth(); // 0-indexed
@@ -48,7 +60,7 @@ function monthKey(y, m) {
 async function loadMonth() {
   const key = monthKey(currentYear, currentMonth);
   try {
-    const res = await fetch(`/api/days/${key}`);
+    const res = await fetch(`/api/days/${key}?uid=${encodeURIComponent(UID)}`);
     const data = await res.json();
     dayData = {};
     data.forEach(row => {
@@ -158,7 +170,7 @@ async function onDayClick(dateKey, cell) {
   updateStats();
 
   try {
-    await fetch(`/api/days/${dateKey}`, {
+    await fetch(`/api/days/${dateKey}?uid=${encodeURIComponent(UID)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ crossed: newCrossed, note: entry.note || null })
@@ -210,7 +222,7 @@ noteSave.addEventListener('click', async () => {
   dayData[dateKey] = { crossed: entry.crossed, note: note || null };
 
   try {
-    await fetch(`/api/days/${dateKey}`, {
+    await fetch(`/api/days/${dateKey}?uid=${encodeURIComponent(UID)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ crossed: entry.crossed, note: note || null })
@@ -253,7 +265,7 @@ function daysUntil(targetDateStr) {
 
 async function loadGoals() {
   try {
-    const res = await fetch('/api/goals');
+    const res = await fetch(`/api/goals?uid=${encodeURIComponent(UID)}`);
     goalsData = await res.json();
   } catch (err) {
     console.error('Nepodarilo se nacist cile:', err);
@@ -318,7 +330,7 @@ function escapeHtml(str) {
 
 async function deleteGoal(id) {
   try {
-    await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+    await fetch(`/api/goals/${id}?uid=${encodeURIComponent(UID)}`, { method: 'DELETE' });
     goalsData = goalsData.filter(g => String(g.id) !== String(id));
     renderGoals();
   } catch (err) {
@@ -355,7 +367,7 @@ goalSave.addEventListener('click', async () => {
   }
 
   try {
-    const res = await fetch('/api/goals', {
+    const res = await fetch(`/api/goals?uid=${encodeURIComponent(UID)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ label, target_date: targetDate })
