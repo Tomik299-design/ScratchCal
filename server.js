@@ -53,9 +53,22 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
+// Pomocna funkce - overi, ze uid je v pozadavku pritomne
+function requireUid(req, res) {
+  const uid = req.query.uid;
+  if (!uid || typeof uid !== 'string') {
+    res.status(400).json({ error: 'Chybi uid parametr' });
+    return null;
+  }
+  return uid;
+}
+
 // Ziskat vsechny zaznamy pro dany mesic (format YYYY-MM)
 app.get('/api/days/:month', async (req, res) => {
   try {
+    const uid = requireUid(req, res);
+    if (!uid) return;
+
     const { month } = req.params; // napr. 2026-06
 
     if (!/^\d{4}-\d{2}$/.test(month)) {
@@ -74,6 +87,7 @@ app.get('/api/days/:month', async (req, res) => {
     const { data, error } = await supabase
       .from('calendar_days')
       .select('*')
+      .eq('user_id', uid)
       .gte('date', startDate)
       .lt('date', endDate);
 
@@ -89,6 +103,9 @@ app.get('/api/days/:month', async (req, res) => {
 // Vytvorit / aktualizovat zaznam pro konkretni den
 app.post('/api/days/:date', async (req, res) => {
   try {
+    const uid = requireUid(req, res);
+    if (!uid) return;
+
     const { date } = req.params; // YYYY-MM-DD
     const { crossed, note } = req.body;
 
@@ -97,11 +114,12 @@ app.post('/api/days/:date', async (req, res) => {
       .upsert(
         {
           date,
+          user_id: uid,
           crossed: !!crossed,
           note: note || null,
           updated_at: new Date().toISOString()
         },
-        { onConflict: 'date' }
+        { onConflict: 'date,user_id' }
       )
       .select();
 
@@ -117,11 +135,15 @@ app.post('/api/days/:date', async (req, res) => {
 // Smazat zaznam pro den (reset na prazdny)
 app.delete('/api/days/:date', async (req, res) => {
   try {
+    const uid = requireUid(req, res);
+    if (!uid) return;
+
     const { date } = req.params;
     const { error } = await supabase
       .from('calendar_days')
       .delete()
-      .eq('date', date);
+      .eq('date', date)
+      .eq('user_id', uid);
 
     if (error) throw error;
 
@@ -135,9 +157,13 @@ app.delete('/api/days/:date', async (req, res) => {
 // Ziskat vsechny cile/odpocty
 app.get('/api/goals', async (req, res) => {
   try {
+    const uid = requireUid(req, res);
+    if (!uid) return;
+
     const { data, error } = await supabase
       .from('countdown_goals')
       .select('*')
+      .eq('user_id', uid)
       .order('target_date', { ascending: true });
 
     if (error) throw error;
@@ -152,6 +178,9 @@ app.get('/api/goals', async (req, res) => {
 // Vytvorit novy cil/odpocet
 app.post('/api/goals', async (req, res) => {
   try {
+    const uid = requireUid(req, res);
+    if (!uid) return;
+
     const { label, target_date } = req.body;
 
     if (!label || !target_date) {
@@ -160,7 +189,7 @@ app.post('/api/goals', async (req, res) => {
 
     const { data, error } = await supabase
       .from('countdown_goals')
-      .insert({ label, target_date })
+      .insert({ label, target_date, user_id: uid })
       .select();
 
     if (error) throw error;
@@ -175,11 +204,15 @@ app.post('/api/goals', async (req, res) => {
 // Smazat cil/odpocet
 app.delete('/api/goals/:id', async (req, res) => {
   try {
+    const uid = requireUid(req, res);
+    if (!uid) return;
+
     const { id } = req.params;
     const { error } = await supabase
       .from('countdown_goals')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', uid);
 
     if (error) throw error;
 
